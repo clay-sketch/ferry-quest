@@ -1,11 +1,7 @@
-type VehicleMarker = {
-  name: string;
-  emoji: string;
-  mapPosition: string;
-};
+import type { CrewVehicle } from "@/data/trip-data";
 
 type MapPreviewProps = {
-  vehicles: VehicleMarker[];
+  vehicles: CrewVehicle[];
 };
 
 export function MapPreview({ vehicles }: MapPreviewProps) {
@@ -33,7 +29,7 @@ export function MapPreview({ vehicles }: MapPreviewProps) {
         <div>
           <h2 className="text-2xl font-bold">Quest Map</h2>
           <p className="mt-1 text-slate-600">
-            Crew vehicles and ferry positions will appear here.
+            Static route preview for the drive, terminal, and crossing.
           </p>
         </div>
 

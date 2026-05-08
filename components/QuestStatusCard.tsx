@@ -1,5 +1,7 @@
+import type { TripData } from "@/data/trip-data";
+
 type QuestStatusCardProps = {
-  status: string;
+  status: TripData["questStatus"];
 };
 
 export function QuestStatusCard({ status }: QuestStatusCardProps) {

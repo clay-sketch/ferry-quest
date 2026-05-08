@@ -1,17 +1,16 @@
+import type { TripProgressStep } from "@/data/trip-data";
+
 type TripProgressProps = {
-  currentStep: number;
+  currentStepId: string;
+  steps: TripProgressStep[];
 };
 
-const steps = [
-  "Pack",
-  "Drive",
-  "Arrive",
-  "Park",
-  "Board",
-  "Island",
-];
+export function TripProgress({ currentStepId, steps }: TripProgressProps) {
+  const currentStepIndex = Math.max(
+    steps.findIndex((step) => step.id === currentStepId),
+    0,
+  );
 
-export function TripProgress({ currentStep }: TripProgressProps) {
   return (
     <section className="rounded-3xl bg-white p-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -23,19 +22,18 @@ export function TripProgress({ currentStep }: TripProgressProps) {
         </div>
 
         <span className="rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-800">
-          Step {currentStep} of {steps.length}
+          Step {currentStepIndex + 1} of {steps.length}
         </span>
       </div>
 
       <div className="mt-6 grid gap-3 md:grid-cols-6">
         {steps.map((step, index) => {
-          const stepNumber = index + 1;
-          const isComplete = stepNumber < currentStep;
-          const isCurrent = stepNumber === currentStep;
+          const isComplete = index < currentStepIndex;
+          const isCurrent = index === currentStepIndex;
 
           return (
             <div
-              key={step}
+              key={step.id}
               className={`rounded-2xl p-4 text-center shadow-sm ${
                 isComplete
                   ? "bg-emerald-100 text-emerald-900"
@@ -47,7 +45,10 @@ export function TripProgress({ currentStep }: TripProgressProps) {
               <p className="text-2xl">
                 {isComplete ? "✅" : isCurrent ? "✨" : "○"}
               </p>
-              <p className="mt-2 text-sm font-bold">{step}</p>
+              <p className="mt-2 text-sm font-bold">{step.label}</p>
+              <p className="mt-1 text-xs leading-snug opacity-75">
+                {step.description}
+              </p>
             </div>
           );
         })}

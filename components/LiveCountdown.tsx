@@ -29,16 +29,20 @@ function getTimeRemaining(targetDateTime: string) {
 }
 
 export function LiveCountdown({ targetDateTime }: LiveCountdownProps) {
-    const [timeRemaining, setTimeRemaining] = useState("");
+    const [timeRemaining, setTimeRemaining] = useState("Syncing...");
 
     useEffect(() => {
-        setTimeRemaining(getTimeRemaining(targetDateTime));
-
-        const intervalId = window.setInterval(() => {
+        const updateTimeRemaining = () => {
             setTimeRemaining(getTimeRemaining(targetDateTime));
-        }, 1000);
+        };
 
-        return () => window.clearInterval(intervalId);
+        const timeoutId = window.setTimeout(updateTimeRemaining, 0);
+        const intervalId = window.setInterval(updateTimeRemaining, 1000);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+            window.clearInterval(intervalId);
+        };
     }, [targetDateTime]);
 
     return (
