@@ -1,7 +1,9 @@
+import type { TripData } from "@/data/trip-data";
+
 type TripDetailsProps = {
-  marinaName: string;
-  marinaAddress: string;
-  parkingReminder: string;
+  marinaName: TripData["marinaName"];
+  marinaAddress: TripData["marinaAddress"];
+  parkingReminder: TripData["parkingReminder"];
 };
 
 export function TripDetails({

@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ferry Quest
 
-## Getting Started
+Ferry Quest is a local, static Next.js app for a Bald Head Island family ferry
+travel day. It keeps the trip overview, critical reminders, checklist, family
+quest board, crew vehicles, and ferry notes in one phone-friendly dashboard.
 
-First, run the development server:
+The app does not use a backend, database, auth, external APIs, scraping, or live
+ferry-status integrations. Verify ferry times, tickets, tram reservations, and
+travel advisories with official sources before leaving.
+
+## Install
+
+```bash
+npm install
+```
+
+## Run Locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+```
 
-## Learn More
+## Lint
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run lint
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Editing Trip Content
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Trip-specific content lives in [data/trip-data.ts](data/trip-data.ts):
 
-## Deploy on Vercel
+- `trip`: main trip title, ferry time, arrival target, marina details, and status
+- `tripProgressSteps`: overview progress labels and descriptions
+- `vehicles`: crew/team vehicle cards and map marker positions
+- `ferries`: static ferry fleet notes
+- `checklistItems`: travel-day checklist defaults
+- `questItems`: quest board challenges, categories, points, and team assignment
+- `travelReminders`: critical static reminders shown in the Info section
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Checklist and quest completion are stored only in the browser with
+`localStorage`, so progress is per device and can be reset from the app.

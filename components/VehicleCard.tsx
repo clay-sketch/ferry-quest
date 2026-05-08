@@ -1,10 +1,12 @@
+import type { CrewVehicle } from "@/data/trip-data";
+
 type VehicleCardProps = {
-  name: string;
-  crew: string;
-  status: string;
-  eta: string;
-  margin: string;
-  emoji: string;
+  name: CrewVehicle["name"];
+  crew: CrewVehicle["crew"];
+  status: CrewVehicle["status"];
+  eta: CrewVehicle["eta"];
+  margin: CrewVehicle["margin"];
+  emoji: CrewVehicle["emoji"];
 };
 
 export function VehicleCard({

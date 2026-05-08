@@ -1,7 +1,9 @@
+import type { Ferry } from "@/data/trip-data";
+
 type FerryCardProps = {
-  name: string;
-  status: string;
-  emoji: string;
+  name: Ferry["name"];
+  status: Ferry["status"];
+  emoji: Ferry["emoji"];
 };
 
 export function FerryCard({ name, status, emoji }: FerryCardProps) {
