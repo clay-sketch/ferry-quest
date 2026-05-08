@@ -38,13 +38,23 @@ npm run lint
 
 Trip-specific content lives in [data/trip-data.ts](data/trip-data.ts):
 
-- `trip`: main trip title, ferry time, arrival target, marina details, and status
+- `trip`: main trip title, subtitle, ferry time, arrival target, marina details, and status
 - `tripProgressSteps`: overview progress labels and descriptions
 - `vehicles`: crew/team vehicle cards and map marker positions
-- `ferries`: static ferry fleet notes
+- `ferries`: static ferry fleet notes and non-live ferry card descriptions
+- `checklistSections`: checklist grouping for before leaving, Deep Point arrival, boarding, and island arrival
 - `checklistItems`: travel-day checklist defaults
 - `questItems`: quest board challenges, categories, points, and team assignment
 - `travelReminders`: critical static reminders shown in the Info section
 
 Checklist and quest completion are stored only in the browser with
-`localStorage`, so progress is per device and can be reset from the app.
+`localStorage`, so progress is per device. Use the `Reset checklist + quests`
+button in the app to clear local checklist and quest progress after confirming
+the reset.
+
+## Intentionally Static
+
+Ferry Quest is a manual trip board. Ferry times, ferry status, vessel
+assignments, tickets, tram reservations, parking details, and travel advisories
+must still be checked with official sources before travel. The app does not call
+external services or update live ferry operations.
