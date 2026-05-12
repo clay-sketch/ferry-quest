@@ -12,7 +12,7 @@ import { VehicleCard } from "@/components/VehicleCard";
 import { FerryCard } from "@/components/FerryCard";
 import { CountdownPanel } from "@/components/CountdownPanel";
 import { LiveCountdown } from "@/components/LiveCountdown";
-import { MapPreview } from "@/components/MapPreview";
+import { FerryRouteMap } from "@/components/FerryRouteMap";
 import { QuestStatusCard } from "@/components/QuestStatusCard";
 import { TripProgress } from "@/components/TripProgress";
 import { TripDetails } from "@/components/TripDetails";
@@ -84,7 +84,7 @@ export default function Home() {
           <QuestStatusCard status={trip.questStatus} />
         </section>
 
-        <MapPreview vehicles={vehicles} />
+        <FerryRouteMap />
 
         <TravelDayPanel
           checklistSections={checklistSections}

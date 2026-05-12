@@ -35,7 +35,6 @@ export type CrewVehicle = {
   eta: string;
   margin: string;
   emoji: string;
-  mapPosition: string;
 };
 
 export type Ferry = {
@@ -133,7 +132,6 @@ export const vehicles: CrewVehicle[] = [
     eta: "1:08 PM",
     margin: "52 min buffer",
     emoji: "🐉",
-    mapPosition: "left-[22%] top-[58%]",
   },
   {
     id: "hampton-crew",
@@ -144,7 +142,6 @@ export const vehicles: CrewVehicle[] = [
     eta: "12:58 PM",
     margin: "62 min buffer",
     emoji: "🐚",
-    mapPosition: "left-[38%] top-[48%]",
   },
 ];
 

@@ -4,9 +4,10 @@ Ferry Quest is a local, static Next.js app for a Bald Head Island family ferry
 travel day. It keeps the trip overview, critical reminders, checklist, family
 quest board, crew vehicles, and ferry notes in one phone-friendly dashboard.
 
-The app does not use a backend, database, auth, external APIs, scraping, or live
-ferry-status integrations. Verify ferry times, tickets, tram reservations, and
-travel advisories with official sources before leaving.
+The app does not use a backend, database, auth, scraping, live ferry tracking,
+or ferry-status integrations. The map uses OpenStreetMap tiles for static route
+context only. Verify ferry times, tickets, tram reservations, and travel
+advisories with official sources before leaving.
 
 ## Install
 
@@ -40,9 +41,10 @@ Trip-specific content lives in [data/trip-data.ts](data/trip-data.ts):
 
 - `trip`: main trip title, subtitle, ferry time, arrival target, marina details, and status
 - `tripProgressSteps`: overview progress labels and descriptions
-- `vehicles`: crew/team vehicle cards and map marker positions
+- `vehicles`: crew/team vehicle cards
 - `ferries`: static ferry fleet notes and non-live ferry card descriptions
 - `checklistSections`: checklist grouping for before leaving, Deep Point arrival, boarding, and island arrival
+- `map-data`: static ferry route, terminal markers, and project POIs
 - `checklistItems`: travel-day checklist defaults
 - `questItems`: quest board challenges, categories, points, and team assignment
 - `travelReminders`: critical static reminders shown in the Info section
