@@ -1,4 +1,5 @@
 import {
+  checklistSections,
   checklistItems,
   ferries,
   questItems,
@@ -38,8 +39,7 @@ export default function Home() {
                 {trip.name}
               </h1>
               <p className="mt-4 max-w-2xl text-lg text-slate-700">
-                A travel-day command center for ferry prep, family quests,
-                static route reference, and the final hop to Bald Head Island.
+                {trip.subtitle}
               </p>
             </div>
 
@@ -71,13 +71,13 @@ export default function Home() {
           <CountdownPanel
             label="Ferry Departure"
             time={trip.ferryDepartureTime}
-            helperText="The ship leaves the harbor"
+            helperText="Verify with the official ferry source"
           />
 
           <CountdownPanel
             label="Target Arrival"
             time={trip.targetArrivalTime}
-            helperText="Arrive, unload, park, and breathe"
+            helperText="Arrive, unload, park, and regroup"
           />
           <LiveCountdown targetDateTime={trip.ferryDepartureDateTime} />
 
@@ -87,6 +87,7 @@ export default function Home() {
         <FerryRouteMap />
 
         <TravelDayPanel
+          checklistSections={checklistSections}
           checklistItems={checklistItems}
           quests={questItems}
           vehicles={vehicles}
@@ -109,6 +110,7 @@ export default function Home() {
                   key={vehicle.id}
                   name={vehicle.name}
                   crew={vehicle.crew}
+                  accent={vehicle.accent}
                   status={vehicle.status}
                   eta={vehicle.eta}
                   margin={vehicle.margin}
@@ -119,17 +121,17 @@ export default function Home() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold">Ferry Route Notes</h2>
+            <h2 className="text-2xl font-bold">Ferry Fleet</h2>
             <p className="mt-1 text-slate-600">
-              Ferry route shown for reference. Verify official ferry times
-              before travel.
+              Static trip notes only. Verify official ferry times before travel.
             </p>
             <div className="mt-4 grid gap-4 md:grid-cols-4">
               {ferries.map((ferry) => (
                 <FerryCard
                   key={ferry.id}
                   name={ferry.name}
-                  note={ferry.note}
+                  status={ferry.status}
+                  description={ferry.description}
                   emoji={ferry.emoji}
                 />
               ))}

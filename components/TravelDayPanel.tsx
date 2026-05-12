@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type {
+  ChecklistSection,
   ChecklistItem,
   CrewVehicle,
   QuestCategory,
@@ -11,6 +12,7 @@ import type {
 } from "@/data/trip-data";
 
 type TravelDayPanelProps = {
+  checklistSections: ChecklistSection[];
   checklistItems: ChecklistItem[];
   quests: QuestItem[];
   vehicles: CrewVehicle[];
@@ -92,13 +94,14 @@ function getAssignmentLabel(
   vehicles: CrewVehicle[],
 ) {
   if (assignment === "all") {
-    return "All teams";
+    return "All crews";
   }
 
   return vehicles.find((vehicle) => vehicle.id === assignment)?.crew ?? "Team";
 }
 
 export function TravelDayPanel({
+  checklistSections,
   checklistItems,
   quests,
   vehicles,
@@ -152,6 +155,14 @@ export function TravelDayPanel({
     () => quests.filter((quest) => completedQuestIds.has(quest.id)),
     [completedQuestIds, quests],
   );
+  const groupedChecklistItems = useMemo(
+    () =>
+      checklistSections.map((section) => ({
+        ...section,
+        items: checklistItems.filter((item) => item.sectionId === section.id),
+      })),
+    [checklistItems, checklistSections],
+  );
 
   const completedChecklistCount = completedChecklistIds.size;
   const completedQuestCount = completedQuestIds.size;
@@ -178,6 +189,14 @@ export function TravelDayPanel({
   }));
 
   function resetProgress() {
+    const shouldReset = window.confirm(
+      "Reset all checklist and quest progress on this device?",
+    );
+
+    if (!shouldReset) {
+      return;
+    }
+
     setCompletedChecklistIds(new Set());
     setCompletedQuestIds(new Set());
 
@@ -200,7 +219,8 @@ export function TravelDayPanel({
             </p>
             <h2 className="mt-2 text-2xl font-bold">Checklist</h2>
             <p className="mt-1 text-slate-600">
-              {completedChecklistCount} of {checklistItems.length} items complete
+              Travel-day progress: {completedChecklistCount} of{" "}
+              {checklistItems.length} checked off
             </p>
           </div>
 
@@ -209,7 +229,7 @@ export function TravelDayPanel({
             onClick={resetProgress}
             className="min-h-11 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2"
           >
-            Reset progress
+            Reset checklist + quests
           </button>
         </div>
 
@@ -220,44 +240,59 @@ export function TravelDayPanel({
           />
         </div>
 
-        <div className="mt-5 grid gap-3 md:grid-cols-2">
-          {checklistItems.map((item) => {
-            const isComplete = completedChecklistIds.has(item.id);
+        <div className="mt-6 grid gap-5">
+          {groupedChecklistItems.map((section) => (
+            <section key={section.id} aria-labelledby={`${section.id}-heading`}>
+              <div className="mb-3">
+                <h3 id={`${section.id}-heading`} className="font-bold">
+                  {section.title}
+                </h3>
+                <p className="mt-1 text-sm text-slate-600">
+                  {section.description}
+                </p>
+              </div>
 
-            return (
-              <button
-                key={item.id}
-                type="button"
-                aria-pressed={isComplete}
-                onClick={() =>
-                  toggleCompletedId(item.id, setCompletedChecklistIds)
-                }
-                className={`min-h-20 rounded-2xl border p-4 text-left shadow-sm transition focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 ${
-                  isComplete
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-950"
-                    : "border-slate-200 bg-white text-slate-900 hover:border-sky-200 hover:bg-sky-50"
-                }`}
-              >
-                <span className="flex items-start gap-3">
-                  <span
-                    className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-sm font-bold ${
-                      isComplete
-                        ? "border-emerald-500 bg-emerald-500 text-white"
-                        : "border-slate-300 bg-white text-slate-400"
-                    }`}
-                  >
-                    {isComplete ? "✓" : ""}
-                  </span>
-                  <span>
-                    <span className="block font-bold">{item.title}</span>
-                    <span className="mt-1 block text-sm leading-5 text-slate-600">
-                      {item.helperText}
-                    </span>
-                  </span>
-                </span>
-              </button>
-            );
-          })}
+              <div className="grid gap-3 md:grid-cols-2">
+                {section.items.map((item) => {
+                  const isComplete = completedChecklistIds.has(item.id);
+
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      aria-pressed={isComplete}
+                      onClick={() =>
+                        toggleCompletedId(item.id, setCompletedChecklistIds)
+                      }
+                      className={`min-h-20 rounded-2xl border p-4 text-left shadow-sm transition focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 ${
+                        isComplete
+                          ? "border-emerald-200 bg-emerald-50 text-emerald-950"
+                          : "border-slate-200 bg-white text-slate-900 hover:border-sky-200 hover:bg-sky-50"
+                      }`}
+                    >
+                      <span className="flex items-start gap-3">
+                        <span
+                          className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-sm font-bold ${
+                            isComplete
+                              ? "border-emerald-500 bg-emerald-500 text-white"
+                              : "border-slate-300 bg-white text-slate-400"
+                          }`}
+                        >
+                          {isComplete ? "✓" : ""}
+                        </span>
+                        <span>
+                          <span className="block font-bold">{item.title}</span>
+                          <span className="mt-1 block text-sm leading-5 text-slate-600">
+                            {item.helperText}
+                          </span>
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
         </div>
       </section>
 
@@ -272,12 +307,12 @@ export function TravelDayPanel({
             </p>
             <h2 className="mt-2 text-2xl font-bold">Challenges</h2>
             <p className="mt-1 text-slate-600">
-              {completedQuestCount} of {quests.length} quests complete
+              Quest progress: {completedQuestCount} of {quests.length} complete
             </p>
           </div>
 
           <div className="rounded-2xl bg-amber-100 px-4 py-3 text-right text-amber-950">
-            <p className="text-sm font-semibold">Family Score</p>
+            <p className="text-sm font-semibold">Family Quest Score</p>
             <p className="text-2xl font-bold">
               {familyScore} / {possibleScore}
             </p>
@@ -294,14 +329,14 @@ export function TravelDayPanel({
         <div className="mt-5 grid gap-3 md:grid-cols-3">
           <div className="rounded-2xl bg-slate-50 p-4">
             <p className="text-sm font-semibold text-slate-500">
-              Shared Quest Points
+              All-crew points
             </p>
             <p className="mt-1 text-2xl font-bold">{sharedScore}</p>
           </div>
           {teamScores.map((team) => (
             <div key={team.id} className="rounded-2xl bg-slate-50 p-4">
               <p className="text-sm font-semibold text-slate-500">
-                {team.emoji} {team.crew}
+                {team.emoji} {team.crew} points
               </p>
               <p className="mt-1 text-2xl font-bold">{team.score}</p>
             </div>
