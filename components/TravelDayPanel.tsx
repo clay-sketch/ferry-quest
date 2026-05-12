@@ -8,7 +8,13 @@ import type {
   QuestCategory,
   QuestItem,
   TeamAssignment,
+  TeamId,
 } from "@/data/trip-data";
+import {
+  createQuestSession,
+  getQuestItemsForCrew,
+} from "@/data/quest-session";
+import { useQuestSession } from "@/components/QuestSessionProvider";
 
 type TravelDayPanelProps = {
   checklistItems: ChecklistItem[];
@@ -17,7 +23,6 @@ type TravelDayPanelProps = {
 };
 
 const CHECKLIST_STORAGE_KEY = "ferry-quest:checklist-completed:v1";
-const QUEST_STORAGE_KEY = "ferry-quest:quest-completed:v1";
 
 const categoryStyles: Record<QuestCategory, string> = {
   Travel: "bg-sky-100 text-sky-800",
@@ -98,26 +103,54 @@ function getAssignmentLabel(
   return vehicles.find((vehicle) => vehicle.id === assignment)?.crew ?? "Team";
 }
 
+function formatSessionStartedAt(startedAt: string) {
+  return new Intl.DateTimeFormat(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(startedAt));
+}
+
+function getShortSessionId(sessionId: string) {
+  return sessionId.split("-").slice(-1)[0] ?? sessionId;
+}
+
 export function TravelDayPanel({
   checklistItems,
   quests,
   vehicles,
 }: TravelDayPanelProps) {
+  const { activeQuestSession, setActiveQuestSession } = useQuestSession();
   const [hasHydrated, setHasHydrated] = useState(false);
   const [completedChecklistIds, setCompletedChecklistIds] = useState<
     Set<string>
   >(() => new Set());
-  const [completedQuestIds, setCompletedQuestIds] = useState<Set<string>>(
-    () => new Set(),
+  const [selectedCrewId, setSelectedCrewId] = useState<TeamId | null>(
+    () => vehicles[0]?.id ?? null,
   );
 
   const checklistIds = useMemo(
     () => new Set(checklistItems.map((item) => item.id)),
     [checklistItems],
   );
-  const questIds = useMemo(
-    () => new Set(quests.map((quest) => quest.id)),
-    [quests],
+
+  const selectedVehicle = useMemo(
+    () =>
+      vehicles.find((vehicle) => vehicle.id === selectedCrewId) ?? vehicles[0],
+    [selectedCrewId, vehicles],
+  );
+  const activeCrew = activeQuestSession
+    ? vehicles.find((vehicle) => vehicle.id === activeQuestSession.crewId)
+    : undefined;
+  const visibleQuests = useMemo(
+    () =>
+      activeQuestSession
+        ? getQuestItemsForCrew(quests, activeQuestSession.crewId)
+        : quests,
+    [activeQuestSession, quests],
+  );
+  const completedQuestIds = useMemo(
+    () => new Set(activeQuestSession?.completedQuestItemIds ?? []),
+    [activeQuestSession],
   );
 
   useEffect(() => {
@@ -125,12 +158,11 @@ export function TravelDayPanel({
       setCompletedChecklistIds(
         readStoredCompletedIds(CHECKLIST_STORAGE_KEY, checklistIds),
       );
-      setCompletedQuestIds(readStoredCompletedIds(QUEST_STORAGE_KEY, questIds));
       setHasHydrated(true);
     }, 0);
 
     return () => window.clearTimeout(timeoutId);
-  }, [checklistIds, questIds]);
+  }, [checklistIds]);
 
   useEffect(() => {
     if (!hasHydrated) {
@@ -140,17 +172,9 @@ export function TravelDayPanel({
     writeStoredCompletedIds(CHECKLIST_STORAGE_KEY, completedChecklistIds);
   }, [completedChecklistIds, hasHydrated]);
 
-  useEffect(() => {
-    if (!hasHydrated) {
-      return;
-    }
-
-    writeStoredCompletedIds(QUEST_STORAGE_KEY, completedQuestIds);
-  }, [completedQuestIds, hasHydrated]);
-
   const completedQuests = useMemo(
-    () => quests.filter((quest) => completedQuestIds.has(quest.id)),
-    [completedQuestIds, quests],
+    () => visibleQuests.filter((quest) => completedQuestIds.has(quest.id)),
+    [completedQuestIds, visibleQuests],
   );
 
   const completedChecklistCount = completedChecklistIds.size;
@@ -159,12 +183,18 @@ export function TravelDayPanel({
     completedChecklistCount,
     checklistItems.length,
   );
-  const questPercent = getProgressPercent(completedQuestCount, quests.length);
+  const questPercent = getProgressPercent(
+    completedQuestCount,
+    visibleQuests.length,
+  );
   const familyScore = completedQuests.reduce(
     (total, quest) => total + quest.points,
     0,
   );
-  const possibleScore = quests.reduce((total, quest) => total + quest.points, 0);
+  const possibleScore = visibleQuests.reduce(
+    (total, quest) => total + quest.points,
+    0,
+  );
   const sharedScore = completedQuests
     .filter((quest) => quest.teamAssignment === "all")
     .reduce((total, quest) => total + quest.points, 0);
@@ -179,12 +209,58 @@ export function TravelDayPanel({
 
   function resetProgress() {
     setCompletedChecklistIds(new Set());
-    setCompletedQuestIds(new Set());
+    setActiveQuestSession(null);
 
     if (typeof window !== "undefined") {
       window.localStorage.removeItem(CHECKLIST_STORAGE_KEY);
-      window.localStorage.removeItem(QUEST_STORAGE_KEY);
     }
+  }
+
+  function startQuestSession() {
+    if (!selectedVehicle) {
+      return;
+    }
+
+    setActiveQuestSession(
+      createQuestSession({
+        crewId: selectedVehicle.id,
+        vehicleId: selectedVehicle.id,
+        questItems: quests,
+      }),
+    );
+  }
+
+  function toggleQuestCompletedId(id: QuestItem["id"]) {
+    setActiveQuestSession((currentSession) => {
+      if (!currentSession) {
+        return currentSession;
+      }
+
+      const availableQuestItems = getQuestItemsForCrew(
+        quests,
+        currentSession.crewId,
+      );
+
+      if (!availableQuestItems.some((quest) => quest.id === id)) {
+        return currentSession;
+      }
+
+      const nextCompletedIds = new Set(currentSession.completedQuestItemIds);
+
+      if (nextCompletedIds.has(id)) {
+        nextCompletedIds.delete(id);
+      } else {
+        nextCompletedIds.add(id);
+      }
+
+      return {
+        ...currentSession,
+        completedQuestItemIds: [...nextCompletedIds],
+        currentQuestItemId: availableQuestItems.find(
+          (quest) => !nextCompletedIds.has(quest.id),
+        )?.id,
+      };
+    });
   }
 
   return (
@@ -272,7 +348,7 @@ export function TravelDayPanel({
             </p>
             <h2 className="mt-2 text-2xl font-bold">Challenges</h2>
             <p className="mt-1 text-slate-600">
-              {completedQuestCount} of {quests.length} quests complete
+              {completedQuestCount} of {visibleQuests.length} quests complete
             </p>
           </div>
 
@@ -281,6 +357,64 @@ export function TravelDayPanel({
             <p className="text-2xl font-bold">
               {familyScore} / {possibleScore}
             </p>
+          </div>
+        </div>
+
+        <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-amber-950">
+                Quest Session
+              </p>
+              <p className="mt-1 text-sm text-amber-900">
+                {activeQuestSession
+                  ? `${activeCrew?.crew ?? "Crew"} started at ${formatSessionStartedAt(activeQuestSession.startedAt)}`
+                  : "Choose a crew to begin."}
+              </p>
+              {activeQuestSession ? (
+                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-amber-800">
+                  Session {getShortSessionId(activeQuestSession.sessionId)}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="grid gap-2 sm:grid-cols-2">
+                {vehicles.map((vehicle) => {
+                  const isSelected = vehicle.id === selectedVehicle?.id;
+
+                  return (
+                    <button
+                      key={vehicle.id}
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => setSelectedCrewId(vehicle.id)}
+                      className={`min-h-12 rounded-2xl border px-3 py-2 text-left text-sm font-bold transition focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 ${
+                        isSelected
+                          ? "border-amber-500 bg-white text-amber-950"
+                          : "border-amber-200 bg-amber-100 text-amber-900 hover:bg-white"
+                      }`}
+                    >
+                      <span className="block">
+                        {vehicle.emoji} {vehicle.crew}
+                      </span>
+                      <span className="block text-xs font-semibold opacity-75">
+                        {vehicle.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                type="button"
+                onClick={startQuestSession}
+                disabled={!selectedVehicle}
+                className="min-h-12 rounded-2xl bg-slate-900 px-5 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400"
+              >
+                {activeQuestSession ? "Start New" : "Start Quest"}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -309,19 +443,22 @@ export function TravelDayPanel({
         </div>
 
         <div className="mt-5 grid gap-3 lg:grid-cols-2">
-          {quests.map((quest) => {
+          {visibleQuests.map((quest) => {
             const isComplete = completedQuestIds.has(quest.id);
+            const isCurrent =
+              activeQuestSession?.currentQuestItemId === quest.id;
 
             return (
               <button
                 key={quest.id}
                 type="button"
                 aria-pressed={isComplete}
-                onClick={() => toggleCompletedId(quest.id, setCompletedQuestIds)}
+                disabled={!activeQuestSession}
+                onClick={() => toggleQuestCompletedId(quest.id)}
                 className={`min-h-28 rounded-2xl border p-4 text-left shadow-sm transition focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 ${
                   isComplete
                     ? "border-amber-300 bg-amber-50 text-amber-950"
-                    : "border-slate-200 bg-white text-slate-900 hover:border-amber-200 hover:bg-amber-50"
+                    : "border-slate-200 bg-white text-slate-900 hover:border-amber-200 hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:border-slate-200 disabled:hover:bg-white"
                 }`}
               >
                 <span className="flex items-start justify-between gap-3">
@@ -338,6 +475,11 @@ export function TravelDayPanel({
                       <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-600 ring-1 ring-slate-200">
                         {getAssignmentLabel(quest.teamAssignment, vehicles)}
                       </span>
+                      {isCurrent ? (
+                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
+                          Current
+                        </span>
+                      ) : null}
                     </span>
                     <span className="mt-3 block font-bold">{quest.title}</span>
                     <span className="mt-1 block text-sm leading-5 text-slate-600">

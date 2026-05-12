@@ -18,6 +18,7 @@ import { TripDetails } from "@/components/TripDetails";
 import { TravelDayPanel } from "@/components/TravelDayPanel";
 import { CriticalInfo } from "@/components/CriticalInfo";
 import { MobileNavigation } from "@/components/MobileNavigation";
+import { QuestSessionProvider } from "@/components/QuestSessionProvider";
 
 export default function Home() {
   return (
@@ -67,30 +68,36 @@ export default function Home() {
           steps={tripProgressSteps}
         />
 
-        <section className="grid gap-4 md:grid-cols-4">
-          <CountdownPanel
-            label="Ferry Departure"
-            time={trip.ferryDepartureTime}
-            helperText="The ship leaves the harbor"
+        <QuestSessionProvider>
+          <section className="grid gap-4 md:grid-cols-4">
+            <CountdownPanel
+              label="Ferry Departure"
+              time={trip.ferryDepartureTime}
+              helperText="The ship leaves the harbor"
+            />
+
+            <CountdownPanel
+              label="Target Arrival"
+              time={trip.targetArrivalTime}
+              helperText="Arrive, unload, park, and breathe"
+            />
+            <LiveCountdown targetDateTime={trip.ferryDepartureDateTime} />
+
+            <QuestStatusCard
+              status={trip.questStatus}
+              quests={questItems}
+              vehicles={vehicles}
+            />
+          </section>
+
+          <FerryRouteMap />
+
+          <TravelDayPanel
+            checklistItems={checklistItems}
+            quests={questItems}
+            vehicles={vehicles}
           />
-
-          <CountdownPanel
-            label="Target Arrival"
-            time={trip.targetArrivalTime}
-            helperText="Arrive, unload, park, and breathe"
-          />
-          <LiveCountdown targetDateTime={trip.ferryDepartureDateTime} />
-
-          <QuestStatusCard status={trip.questStatus} />
-        </section>
-
-        <FerryRouteMap />
-
-        <TravelDayPanel
-          checklistItems={checklistItems}
-          quests={questItems}
-          vehicles={vehicles}
-        />
+        </QuestSessionProvider>
 
         <section id="info" className="scroll-mt-6 grid gap-8">
           <CriticalInfo reminders={travelReminders} />
