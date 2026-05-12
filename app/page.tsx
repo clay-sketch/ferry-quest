@@ -11,7 +11,7 @@ import { VehicleCard } from "@/components/VehicleCard";
 import { FerryCard } from "@/components/FerryCard";
 import { CountdownPanel } from "@/components/CountdownPanel";
 import { LiveCountdown } from "@/components/LiveCountdown";
-import { MapPreview } from "@/components/MapPreview";
+import { FerryRouteMap } from "@/components/FerryRouteMap";
 import { QuestStatusCard } from "@/components/QuestStatusCard";
 import { TripProgress } from "@/components/TripProgress";
 import { TripDetails } from "@/components/TripDetails";
@@ -38,8 +38,8 @@ export default function Home() {
                 {trip.name}
               </h1>
               <p className="mt-4 max-w-2xl text-lg text-slate-700">
-                A travel-day command center for tracking crews, ferry prep,
-                family quests, and the final hop to Bald Head Island.
+                A travel-day command center for ferry prep, family quests,
+                static route reference, and the final hop to Bald Head Island.
               </p>
             </div>
 
@@ -84,7 +84,7 @@ export default function Home() {
           <QuestStatusCard status={trip.questStatus} />
         </section>
 
-        <MapPreview vehicles={vehicles} />
+        <FerryRouteMap />
 
         <TravelDayPanel
           checklistItems={checklistItems}
@@ -119,16 +119,17 @@ export default function Home() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold">Ferry Fleet</h2>
+            <h2 className="text-2xl font-bold">Ferry Route Notes</h2>
             <p className="mt-1 text-slate-600">
-              Static trip notes only. Verify official ferry times before travel.
+              Ferry route shown for reference. Verify official ferry times
+              before travel.
             </p>
             <div className="mt-4 grid gap-4 md:grid-cols-4">
               {ferries.map((ferry) => (
                 <FerryCard
                   key={ferry.id}
                   name={ferry.name}
-                  status={ferry.status}
+                  note={ferry.note}
                   emoji={ferry.emoji}
                 />
               ))}

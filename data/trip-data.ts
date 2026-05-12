@@ -31,13 +31,12 @@ export type CrewVehicle = {
   eta: string;
   margin: string;
   emoji: string;
-  mapPosition: string;
 };
 
 export type Ferry = {
   id: string;
   name: string;
-  status: string;
+  note: string;
   emoji: string;
 };
 
@@ -118,7 +117,6 @@ export const vehicles: CrewVehicle[] = [
     eta: "1:08 PM",
     margin: "52 min early",
     emoji: "🐉",
-    mapPosition: "left-[22%] top-[58%]",
   },
   {
     id: "hampton-crew",
@@ -128,28 +126,32 @@ export const vehicles: CrewVehicle[] = [
     eta: "12:58 PM",
     margin: "62 min early",
     emoji: "🐚",
-    mapPosition: "left-[38%] top-[48%]",
   },
 ];
 
 export const ferries: Ferry[] = [
-  { id: "sans-souci", name: "Sans Souci", status: "Near Southport", emoji: "⛴️" },
+  {
+    id: "sans-souci",
+    name: "Sans Souci",
+    note: "Static fleet reference",
+    emoji: "⛴️",
+  },
   {
     id: "adventure",
     name: "Adventure",
-    status: "Crossing the Cape Fear",
+    note: "Static fleet reference",
     emoji: "🌊",
   },
   {
     id: "patriot",
     name: "Patriot",
-    status: "Near Bald Head Island",
+    note: "Static fleet reference",
     emoji: "⚓",
   },
   {
     id: "ranger",
     name: "Ranger",
-    status: "Waiting at harbor",
+    note: "Static fleet reference",
     emoji: "🧭",
   },
 ];
